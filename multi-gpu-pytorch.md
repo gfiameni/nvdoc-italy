@@ -61,19 +61,3 @@ master_addr=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
 export MASTER_ADDR=$master_addr
 echo "MASTER_ADDR="$MASTER_ADDR
 
-### init virtual environment if needed
-source ~/anaconda3/etc/profile.d/conda.sh
-conda activate myenv
-
-### the command to run
-srun python main.py --net resnet18 \
---lr 1e-3 --epochs 50 --other_args
-
-```
-* run command in cluster `sbatch exp.sh`
-
-### Reference & Acknowledgement
-* pytorch classification example: https://github.com/pytorch/vision/blob/7b9d30eb7c4d92490d9ac038a140398e0a690db6/references/classification/train.py 
-* facebook's MoCo example: https://github.com/facebookresearch/moco/blob/master/main_lincls.py
-* Thank Bruno for some suggestions
-* Last updated on Oct 2021

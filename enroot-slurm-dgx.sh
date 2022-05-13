@@ -1,21 +1,21 @@
 # slurm-example.sh
 #!/bin/bash
 #SBATCH -A sa
-#SBATCH -p luna
+#SBATCH -p dgx_usr_prod
 #SBATCH --time 00:15:00     # format: HH:MM:SS
 #SBATCH -N 1                # 1 node
-#SBATCH --ntasks-per-node=1 # 8 tasks
-#SBATCH --job-name=sa-ek100:test
+#SBATCH --ntasks-per-node=1 
+#SBATCH --job-name=test
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=<your-email>
 #SBATCH -o %x.o%j
 #SBATCH -e %x.e%j
 
 
-export MY_SCRATCH=/lustre/fsw/sa
+export MY_SCRATCH=$CINECA_SCRATCH
 export TMPDIR=$MY_SCRATCH/$USER/tmp
 
-#mkdir -p $TMPDIR
+mkdir -p $TMPDIR
 
 export ENROOT_CACHE_PATH=$MY_SCRATCH/$USER/enroot/tmp/enroot-cache
 export ENROOT_DATA_PATH=$MY_SCRATCH/$USER/enroot/tmp/enroot-data
@@ -24,7 +24,9 @@ export ENROOT_MOUNT_HOME=y NVIDIA_DRIVER_CAPABILITIES=all
 
 export ENROOT_TEMP_PATH=/tmp
 
-enroot start --mount $PWD:/workspace --mount /lustre/fsw/sa/ek-challenge/data:/data --root --env NVIDIA_DRIVER_CAPABILITIES --rw pytorch_2202 python -c 'import torch; print(torch.__version__); wait'
+enroot start --mount $PWD:/workspace --mount /lust:/data --root --env NVIDIA_DRIVER_CAPABILITIES --rw pytorch_2202 python -c 'import torch; print(torch.__version__); wait'
+
+------
 
 #!/bin/bash
 #SBATCH -A IscrC_LSMAP-AI

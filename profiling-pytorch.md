@@ -1,4 +1,4 @@
-# This isn't supposed to run as a bash script, i named it with ".sh" for syntax highlighting.
+# IMPORTANT This isn't a bash script, I used ".sh" extension of for syntax highlighting.
 
 # https://developer.nvidia.com/nsight-systems
 # https://docs.nvidia.com/nsight-systems/profiling/index.html

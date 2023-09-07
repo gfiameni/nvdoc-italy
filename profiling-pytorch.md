@@ -5,6 +5,7 @@
 * https://docs.nvidia.com/nsight-systems/profiling/index.html
 
 
+## NVTX Regions
 ```
 # In your script, write
 # torch.cuda.nvtx.range_push("region name")
@@ -14,6 +15,9 @@
 #
 # Dummy/warmup iterations prior to the region you want to profile are highly
 # recommended to get caching allocator/cuda context initialization out of the way.
+
+# Focused profiling, profiles only a target region
+# (your app must call torch.cuda.cudart().cudaProfilerStart()/Stop() at the start/end of the target region)
 ```
 
 ## nsys
@@ -24,8 +28,7 @@ nsys profile -w true -t cuda,nvtx,osrt,cudnn,cublas -s none -o nsight_report -f 
 # Adds CPU backtraces that will show when you mouse over a long call or small orange tick (sample) on the CPU timeline:
 nsys profile -w true -t cuda,nvtx,osrt,cudnn,cublas -s cpu -o nsight_report -f true --cudabacktrace=true --cudabacktrace-threshold=10000 --osrt-threshold=10000 -x true python script.py args...
 
-# Focused profiling, profiles only a target region
-# (your app must call torch.cuda.cudart().cudaProfilerStart()/Stop() at the start/end of the target region)
+
 nsys profile -w true -t cuda,nvtx,osrt,cudnn,cublas -s cpu -o nsight_report -f true --capture-range=cudaProfilerApi --stop-on-range-end=true --cudabacktrace=true --cudabacktrace-threshold=10000 --osrt-threshold=10000 -x true python script.py args...
 
 # if appname creates child processes, nsys WILL profile those as well.  They will show up as separate processes with

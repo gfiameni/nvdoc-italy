@@ -17,7 +17,7 @@
 ```
 
 ## nsys
-
+```
 # Typical use (collects GPU timeline, Cuda and OS calls on the CPU timeline, but no CPU stack traces)
 nsys profile -w true -t cuda,nvtx,osrt,cudnn,cublas -s none -o nsight_report -f true -x true python script.py args...
 
@@ -64,6 +64,7 @@ nsys profile
                        # occur by default if -s cpu is enabled.
 -x true # Quit the profiler when the app exits.
 python script.py args...
+```
 
 ## cProfile
 

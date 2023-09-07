@@ -1,10 +1,20 @@
-# IMPORTANT This isn't a bash script, I used ".sh" extension of for syntax highlighting.
+# This short guide provides basic instructions on how to profile a PyTorch code using different tools, including NVIDIA NSIGHT SYSTEM
 
-# https://developer.nvidia.com/nsight-systems
-# https://docs.nvidia.com/nsight-systems/profiling/index.html
+## Some links
+* https://developer.nvidia.com/nsight-systems
+* https://docs.nvidia.com/nsight-systems/profiling/index.html
 
-# My preferred nsys (command line executable used to create profiles) commands
-#
+
+```
+* this script is already executable on single node 
+(e.g. slurm's interactive mode by `salloc`, e.g. with 2 GPUs) by 
+CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch \
+--nproc_per_node=2 main.py --net resnet18 \
+--lr 1e-3 --epochs 50 --other_args
+* alternatively it can be executed with slurm, see below
+
+
+```
 # In your script, write
 # torch.cuda.nvtx.range_push("region name")
 # ...
@@ -13,6 +23,8 @@
 #
 # Dummy/warmup iterations prior to the region you want to profile are highly
 # recommended to get caching allocator/cuda context initialization out of the way.
+```
+
 #
 # Copy paste the desired command and run it for your app. It will produce a .qdrep file.
 # Run the "nsight-sys" GUI executable and File->Open the .qdrep file.

@@ -16,13 +16,7 @@
 # recommended to get caching allocator/cuda context initialization out of the way.
 ```
 
-#
-# Copy paste the desired command and run it for your app. It will produce a .qdrep file.
-# Run the "nsight-sys" GUI executable and File->Open the .qdrep file.
-# If you're making the profile locally on your desktop, you may not need nsys at all, you can do
-# the whole workflow (create and view profile) through the GUI, but if your job runs remotely on
-# a cluster node, I prefer to create .qdrep profiles with nsys remotely, copy them back to my desktop,
-# then open them in nsight-sys.
+## nsys
 
 # Typical use (collects GPU timeline, Cuda and OS calls on the CPU timeline, but no CPU stack traces)
 nsys profile -w true -t cuda,nvtx,osrt,cudnn,cublas -s none -o nsight_report -f true -x true python script.py args...
@@ -70,3 +64,23 @@ nsys profile
                        # occur by default if -s cpu is enabled.
 -x true # Quit the profiler when the app exits.
 python script.py args...
+
+## cProfile
+
+## PyTorch Profiler
+
+## PyTorch Lightning Profiler
+
+## Scalene
+
+## PyThone Libe Profiler
+
+#
+# Copy paste the desired command and run it for your app. It will produce a .qdrep file.
+# Run the "nsight-sys" GUI executable and File->Open the .qdrep file.
+# If you're making the profile locally on your desktop, you may not need nsys at all, you can do
+# the whole workflow (create and view profile) through the GUI, but if your job runs remotely on
+# a cluster node, I prefer to create .qdrep profiles with nsys remotely, copy them back to my desktop,
+# then open them in nsight-sys.
+
+

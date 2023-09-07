@@ -6,15 +6,6 @@
 
 
 ```
-* this script is already executable on single node 
-(e.g. slurm's interactive mode by `salloc`, e.g. with 2 GPUs) by 
-CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch \
---nproc_per_node=2 main.py --net resnet18 \
---lr 1e-3 --epochs 50 --other_args
-* alternatively it can be executed with slurm, see below
-
-
-```
 # In your script, write
 # torch.cuda.nvtx.range_push("region name")
 # ...

@@ -113,3 +113,5 @@ python script.py args...
 # then open them in nsight-sys.
 ```
 
+## PyTorch Multiprocessing Best Practices
+* https://pytorch.org/docs/stable/notes/multiprocessing.html

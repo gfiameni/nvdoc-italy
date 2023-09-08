@@ -98,7 +98,7 @@ python script.py args...
 * https://pytorch-lightning.readthedocs.io/en/1.5.10/advanced/profiler.html
 
 ## Scalene
-
+* https://github.com/emeryberger/scalene
 
 ## PyThone Line Profiler
 * https://github.com/pyutils/line_profiler

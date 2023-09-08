@@ -153,3 +153,11 @@ python -X importtime -c "import torch"
              given directory instead of to the code tree
          -X warn_default_encoding: enable opt-in EncodingWarning for 'encoding=None'
 ```
+## Useful ENV variables
+
+```
+export OMP_NUM_THREADS=1
+export PYTORCH_JIT=1
+
+export CUDA_LAUNCH_BLOCKING=1
+```

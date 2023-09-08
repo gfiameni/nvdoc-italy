@@ -4,7 +4,7 @@
 * https://developer.nvidia.com/nsight-systems
 * https://docs.nvidia.com/nsight-systems/profiling/index.html
 
-## How to properly measure time spent on GPU
+## How to correctly measure time spent on the GPU
 
 ```
 start = torch.cuda.Event(enable_timing=True)
@@ -21,7 +21,10 @@ print(start.elapsed_time(end))
 ```
 
 
-## NVTX Regions
+## Define NVTX Regions
+
+* https://docs.nvidia.com/nvtx/index.html
+
 ```
 # In your script, write
 # torch.cuda.nvtx.range_push("region name")
@@ -86,14 +89,20 @@ python script.py args...
 ```
 
 ## cProfile
+* https://docs.python.org/3/library/profile.html
 
 ## PyTorch Profiler
+* https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html
 
 ## PyTorch Lightning Profiler
+* https://pytorch-lightning.readthedocs.io/en/1.5.10/advanced/profiler.html
 
 ## Scalene
 
-## PyThone Libe Profiler
+
+## PyThone Line Profiler
+* https://github.com/pyutils/line_profiler
+
 
 ```
 # Copy paste the desired command and run it for your app. It will produce a .qdrep file.

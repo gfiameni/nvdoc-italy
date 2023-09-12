@@ -161,3 +161,13 @@ export PYTORCH_JIT=1
 
 export CUDA_LAUNCH_BLOCKING=1
 ```
+## Storage Performnace and Data Loading
+
+If the code takes too long to load data from disk (local or network storage), I recommend checking I/O performance before profiling the code thoroughly. Estimating storage performance is a complex task, but the following tool can provide some numbers to start with.
+
+* https://github.com/bkryza/naive-bench
+
+Here are some tutorials and libraries to optimise the data loading part of the code:
+* https://blog.genesiscloud.com/2023/tutorial-series-how-to-optimize-IO-performance
+* https://github.com/NVIDIA/DALI
+

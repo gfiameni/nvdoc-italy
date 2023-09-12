@@ -100,7 +100,7 @@ python script.py args...
 ## Scalene
 * https://github.com/emeryberger/scalene
 
-## PyThone Line Profiler
+## Python Line Profiler
 * https://github.com/pyutils/line_profiler
 
 

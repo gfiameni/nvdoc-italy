@@ -116,7 +116,7 @@ python script.py args...
 ## PyTorch Multiprocessing Best Practices
 * https://pytorch.org/docs/stable/notes/multiprocessing.html
 
-## How long does it take to load the torch libray?
+## How long does it take to load the torch library?
 
 ```
 python -X importtime -c "import torch"

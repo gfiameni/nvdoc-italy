@@ -25,6 +25,11 @@ print(start.elapsed_time(end))
 
 * https://docs.nvidia.com/nvtx/index.html
 
+NVIDIA Extend Toolkit is can be used to profile the NVIDIA GPU 
+
+NVTX cannot use on its own. We need to feed the NVTX result into some visualization software/tools
+such as NSight System
+
 ```
 # In your script, write
 # torch.cuda.nvtx.range_push("region name")
@@ -91,8 +96,141 @@ python script.py args...
 ## cProfile
 * https://docs.python.org/3/library/profile.html
 
+cProfile is a build-in profiler at python specially for CPU event profiling. There are different ways to use cProfiler.
+
+Profile Metrics:
+  - CPU
+    - ncalls: The number of calls made.
+    - tottime: The total time spent in the given function (excluding time made in calls to sub-functions), expressed in seconds.
+    - percall: The time spent per call, calculated as tottime/ncalls.
+    - cumtime: The cumulative time spent in this and all subfunctions.
+    - percall: The cumulative time per primitive call (meaning calls that aren’t via recursion), calculated as cumtime/primitive calls.
+Pros: 
+  - Easy to use
+Cons:
+  - Unable to identify the script lines with most resources spent 
+  - low level subfunction call profiling
+  - Only CPU profiling provided
+  - Less customization
+
+### Method 1
+1. Import the script you want to profile
+```
+import self_defined_script
+import cProfile
+```
+2. Directly call cProfile.run()
+```
+cProfile.run(self_defined_script.funct_to_profile())
+```
+You can create an entry point like run() or main() in the script for profiling
+
+### Method 2
+1. Define the profiler instance
+```
+pr = cProfile.Profile()
+```
+2. Start the profiler. cProfile will start to collect CPU data at this point
+```
+pr.enable()
+```
+3. Then add the codes need to be profiled
+4. Stop the profiler. 
+```
+pr.disable()
+```
+You can get the result in the script by `pr.print_stats()` or you can dump the result into external file by `pr.dump_stats('output.prof')`
+
+An Example of `pr.print_stats()`
+
+![image](https://github.com/gfiameni/nvdoc-italy/assets/57800717/3501ce47-b84f-4a94-a40f-66c8ff422864)
+
+Sort the profiling result before print `pr.sort_stats('cumulative').print_stats()`
+
+
 ## PyTorch Profiler
 * https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html
+
+Pytorch profiler is Integrated high-performance CPU, GPU, and memory profiler
+
+Profile Metrics:
+  - CPU:
+    - Self CPU%: The percentage of total CPU time spent in the function excluding its children functions.
+    - Self CPU: The time that the CPU spent in the function excluding its children functions.
+    - CPU Total %: The percentage of total CPU time spent in the function including its children functions.
+    - CPU Total: The total time that the CPU spent in the function including its children functions.
+    - CPU Time Avg: The average time the CPU spent in the function per call.
+  - GPU (CUDA):
+    - Self CUDA: The time that the GPU spent in the function excluding its children functions.
+    - Self CUDA%: The percentage of total GPU time spent in the function excluding its children functions.
+    - CUDA Total: The total time that the GPU spent in the function including its children functions.
+    - CUDA Time Avg: The average time the GPU spent in the function per call.
+  - Memory
+    - CPU Mem: The amount of CPU memory used by the function including its children functions.
+    - Self CPU Mem: The amount of CPU memory used specifically by the function, excluding its children functions.
+    - CUDA Mem: The amount of GPU memory used by the function including its children functions.
+    - Self CUDA Mem: The amount of GPU memory used specifically by the function, excluding its children functions.
+  - Execution
+    - \# of Calls: The number of times the function was called.
+    - Total GFLOPS: The total number of billion Floating Point Operations (FLOPs) that the function performed. This is a measure of computational intensity and can be useful for understanding the computational cost of the function.
+- Pros: 
+  - Easy to use
+  - Good customization
+  - Support multiple hardware profiling
+- Cons:
+  - Unable to identify the script lines with most resources spent 
+  - low level subfunction call profiling
+
+To use the pytorch_profiler
+```
+# 1. Start profiling setting
+with torch.profiler.profile(
+    activities=[
+        torch.profiler.ProfilerActivity.CPU,    # Monitor CPU activities
+        torch.profiler.ProfilerActivity.CUDA,   # Monitor GPU CUDA activities
+    ],
+    record_shapes=True,  # Record the shape of the input
+    profile_memory=True, # Monitor the memory usage
+    with_stack=True,     # Record source information for the line
+    with_flops=True,     # Estimate the FLOPS (Floating point operation) with formula
+    use_cuda=True,       # Measure CUDA kernel execution time
+    with_modules=False,  # Record module hierarchy int the callstack
+) as prof:
+# End profiling setting
+
+  # Your code here
+  
+# Print out the profiling result
+print(prof.key_averages())
+
+# Print out profiling result based on cpu time and limit only 10 rows.
+print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
+
+# Record the profiling results
+prof.export_chrome_trace("pytorch_profiler_trace.json")
+print('Chrome trace saved!')
+
+prof.export_stacks("/tmp/torch_cuda_stack.txt", "self_cuda_time_total")
+print('Cuda stack saved!')
+
+prof.export_stacks("/tmp/torch_cpu_stack.txt", metric="self_cpu_time_total")
+print('CPU stack saved!')
+```
+
+An example of pytorch_profiler output
+
+![image](https://github.com/gfiameni/nvdoc-italy/assets/57800717/f55386d4-2f89-4a83-b267-36cf84f084f9)
+
+User can also add record function to wrap the lines together into single profile
+```
+with torch.profiler.profile(with_stack=True, profile_memory=True) as prof:
+    with torch.profiler.record_function("my_operation"):
+        # Your code here
+print(prof.key_averages().table(sort_by="self_cpu_time_total", row_limit=10))
+```
+
+An example of using profiler with record function
+![image](https://github.com/gfiameni/nvdoc-italy/assets/57800717/c727daec-288f-4c7a-b8c2-b4c10a107e74)
 
 ## PyTorch Lightning Profiler
 * https://pytorch-lightning.readthedocs.io/en/1.5.10/advanced/profiler.html
@@ -100,9 +238,145 @@ python script.py args...
 ## Scalene
 * https://github.com/emeryberger/scalene
 
+Offical profiler comparison graph 
+ref: https://github.com/emeryberger/scalene#scalene-a-python-cpugpumemory-profiler-with-ai-powered-optimization-proposals
+![image](https://github.com/gfiameni/nvdoc-italy/assets/57800717/364b14a2-c288-41db-860d-9e00b8bc672f)
+
+- Profile Metrics:
+  - CPU
+    - CPU Time: Scalene measures the time spent in each Python function, providing a high-resolution, low-overhead view of CPU usage.
+  - Memory
+    - Memory Usage: Scalene also profiles the memory consumption of your Python program. It shows the amount of memory used on a line-by-line basis, helping you identify memory-intensive parts of your code.
+  - GPU:
+    - GPU Time: If you're using PyTorch, Scalene can measure the time spent on GPU computations. This can help you optimize your code for GPU usage.
+  - I/O:
+    - Copying Activity: Scalene can track and report the amount of data your program copies between Python and native code. This can help you identify performance bottlenecks related to data movement.
+  - Execution:
+    - Number of Function Calls: Scalene reports the number of times each function is called.
+    - Percentage of Time: For each line of code, Scalene provides the percentage of time spent executing that line relative to the total run time.
+- Pros:
+  - Do not require to modify the code specificlly
+  - Good customization
+  - Good functionality
+  - Support multiple hardware profiling
+  - Support GUI
+- Cons:
+  - Unable to identify the script lines with most resources spent 
+  - low level subfunction call profiling
+
+
 ## Python Line Profiler
 * https://github.com/pyutils/line_profiler
 
+Line Profiler is a python line by line profiling tools that used to records the execution time used
+
+- Profile Metrics:
+  - Executions:
+    - Line #: Specifies the line number in the script.
+    - Line Contents: The exact source code from the line. 
+    - Hits: Represents the count of executions for a particular line.
+    - Per Hit: Average execution time for a single hit, expressed in the timer's units.
+    - Time: Total time spent executing the line, given in the timer's units (conversion factor to seconds is provided in the header).
+    - % Time: Percentage of the total execution time of the function spent on this line.
+  - Pros:
+    - Easy to use
+    - Direct and simple result
+    - High level lines and function call profiling
+  - Cons:
+    - Less customizations
+    - Not designed to use at inline
+
+To use the line profiler
+
+```
+from line_profiler import profile
+
+# add @profile to the function that needs profiling
+
+@profile
+def model_train(model, epoch, train_loader, val_loader, optimizer, device, record_result:bool=False):
+    # yours code here
+```
+
+kernprof is used to run line profiler
+
+below show the official `kernprof --help`
+```
+usage: kernprof [-h] [-V] [-l] [-b] [-o OUTFILE] [-s SETUP] [-v] [-r] [-u UNIT] [-z]
+                [-i [OUTPUT_INTERVAL]] [-p PROF_MOD] [--prof-imports]
+                script ...
+
+Run and profile a python script.
+
+positional arguments:
+  script                The python script file to run
+  args                  Optional script arguments
+
+options:
+  -h, --help            show this help message and exit
+  -V, --version         show program's version number and exit
+  -l, --line-by-line    Use the line-by-line profiler instead of cProfile. Implies --builtin.
+  -b, --builtin         Put 'profile' in the builtins. Use 'profile.enable()'/'.disable()',
+                        '@profile' to decorate functions, or 'with profile:' to profile a section
+                        of code.
+  -o OUTFILE, --outfile OUTFILE
+                        Save stats to <outfile> (default: 'scriptname.lprof' with --line-by-line,
+                        'scriptname.prof' without)
+  -s SETUP, --setup SETUP
+                        Code to execute before the code to profile
+  -v, --view            View the results of the profile in addition to saving it
+  -r, --rich            Use rich formatting if viewing output
+  -u UNIT, --unit UNIT  Output unit (in seconds) in which the timing info is displayed (default:
+                        1e-6)
+  -z, --skip-zero       Hide functions which have not been called
+  -i [OUTPUT_INTERVAL], --output-interval [OUTPUT_INTERVAL]
+                        Enables outputting of cumulative profiling results to file every n
+                        seconds. Uses the threading module. Minimum value is 1 (second). Defaults
+                        to disabled.
+  -p PROF_MOD, --prof-mod PROF_MOD
+                        List of modules, functions and/or classes to profile specified by their
+                        name or path. List is comma separated, adding the current script path
+                        profiles full script. Only works with line_profiler -l, --line-by-line
+  --prof-imports        If specified, modules specified to `--prof-mod` will also autoprofile
+                        modules that they import. Only works with line_profiler -l, --line-by-line
+```
+
+There are 2 methods to profile with line profiler
+
+## Method 1
+
+Open a terminal to run the profiling command
+```
+kernprof -l -v script_to_profile.py
+```
+kernprof will a binary file `script_to_profile.py.lprof`
+
+To view the result, we need to use the line_profiler to parse the result into human readable format 
+
+`python -m line_profiler script_to_profile.py.lprof`
+
+## Method 2
+
+We can call the profiler inline inside the python function
+
+```
+%load_ext line_profiler
+%lprun -f funct_for_profile funct_for_profile(*args)
+```
+
+Here show an example to profile function `funct1(data, arg1, arg2)`
+```
+%load_ext line_profiler
+%lprun -f funct1 funct1(data, arg1, arg2)
+```
+
+if the funct_for_profile will return object, this is recommended to use method 1 instead as Method 2 cannot correctly handle the output of the funct_for_profile
+
+Example of line_profiler result
+
+![image](https://github.com/gfiameni/nvdoc-italy/assets/57800717/dbdb8a32-86d2-4138-9d5a-3571ed752f89)
+
+## Using with NVIDIA NSight System 
 
 ```
 # Copy paste the desired command and run it for your app. It will produce a .qdrep file.

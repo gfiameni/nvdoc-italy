@@ -235,6 +235,92 @@ An example of using profiler with record function
 ## PyTorch Lightning Profiler
 * https://pytorch-lightning.readthedocs.io/en/1.5.10/advanced/profiler.html
 
+PyTorch Lightning is a lightweight PyTorch wrapper for high-performance AI research. It provides a high-level interface for PyTorch and reduces the boilerplate code.
+
+PyTorch Lightning includes a built-in Profiler class that provides simple tools to profile your Lightning module and Lightning callbacks. You can use it to identify bottlenecks in your models/training loops.
+
+The Lightning Profiler is different from other profiling tools because it's specifically designed to work with PyTorch Lightning and it's integrated directly into the Lightning training loop.
+
+- Profile Metrics:
+  - CPU
+    - CPU time
+    - ncalls: The number of calls made.
+    - tottime: The total time spent in the given function (excluding time made in calls to sub-functions), expressed in seconds.
+    - percall: The time spent per call, calculated as tottime/ncalls.
+    - cumtime: The cumulative time spent in this and all subfunctions.
+    - percall: The cumulative time per primitive call (meaning calls that aren’t via recursion), calculated as cumtime/primitive calls.
+  - GPU
+    - GPU time 
+  - Pipeline
+    - Number of line calls
+  
+- Pros:
+  - Details and sophisticated profiling
+- Cons: 
+  - Only works on Pytorch Lightning Frameworks' code meaning it can only profile the ML models and pipeline with pytorch lightning only.
+
+### Simple profiler
+Simple profiler only profile the CPU time and mean CPU time for each operations, GPU, memory and IO count is not included. 
+
+To use the simple version of Pytorch Lightning profiler, user need to define a Lightning model class for profiling. 
+
+Below show a sample of skeleton code of Bert classfication model
+
+``` sample
+class BertClassifier(pl.LightningModule):
+    def __init__(self, learning_rate=2e-5):
+        super().__init__()
+        self.learning_rate = learning_rate
+        self.bert = BertForSequenceClassification.from_pretrained('bert-base-uncased')
+        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        dataset = load_dataset('imdb')
+
+    def forward(self, input_ids, attention_mask, labels=None):
+        ...
+
+    def training_step(self, batch, batch_idx):
+        ...
+
+    def test_step(self, batch, batch_idx):
+        ...
+
+    def configure_optimizers(self):
+        ...
+
+    def tokenize_function(self, examples):
+        ...
+
+    def prepare_data(self):
+        ...
+```
+
+Next, create the trainer instance and train with the Pytorch Lighning. Then fit the model and the profiler will automatically profile the results.
+
+
+```
+trainer = pl.Trainer(max_epochs=3,profiler="simple")
+model = BertClassifier()
+trainer.fit(model)
+print(trainer.profiler.summary())
+```
+
+
+- Sample
+  
+![image](https://github.com/gfiameni/nvdoc-italy/assets/57800717/6033c484-7fcf-4869-945f-59a6b13fe218)
+
+### Advance profiler
+
+Pytorch Lightning Profiler also support a more deatailed profiling by using cProfile
+
+Just need to set modify the trainer parameter like `pl.Trainer(max_epochs=3, profiler="Advanced")`
+
+- Sample
+
+![image](https://github.com/gfiameni/nvdoc-italy/assets/57800717/b7e94a6b-e110-4869-ac18-23fd5a4fc36f)
+
+
+
 ## Scalene
 * https://github.com/emeryberger/scalene
 
@@ -386,6 +472,49 @@ Example of line_profiler result
 # a cluster node, I prefer to create .qdrep profiles with nsys remotely, copy them back to my desktop,
 # then open them in nsight-sys.
 ```
+## memory-profiler
+
+reference: https://github.com/pythonprofilers/memory_profiler
+
+Memory Profile is a Python module for monitoring memory consumption of a process as well as line-by-line analysis of
+ memory consumption for python programs. It's a pure python module which depends on the psutil module.
+
+- Profile Metrics:
+  - Memory
+    - line by line memory heap increasement after executing the line
+    - Total memory usage
+    - line occurance
+- Pros:
+  - Easy and direct to use
+  - line by line profile
+  - easy to cehck memory leasks
+- Cons:
+  - Only simple memory usage recorded, detailed variables' name and space allocation is not provided.
+
+To use the memory profiler is very direct 
+
+Import the profil from the package
+'from memory_profiler import profile'
+
+Add the `@prfile` decorator into the functions need profile.
+Note that it will not profile any subfunctions.
+```
+@profile
+def my_func():
+    #  yours code here
+    return a
+```
+
+Then we can directly use any IDE or CLI to run the script.
+
+for CLI:
+we may use `python -m memory_profiler example.py` to run the memory profiler.
+
+Below show the example. 
+![image](https://github.com/gfiameni/nvdoc-italy/assets/57800717/f2b8ff73-5691-4791-9ff7-da0ec0233811)
+
+
+ 
 
 ## PyTorch Multiprocessing Best Practices
 * https://pytorch.org/docs/stable/notes/multiprocessing.html

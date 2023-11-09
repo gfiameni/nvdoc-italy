@@ -514,7 +514,72 @@ Below show the example.
 ![image](https://github.com/gfiameni/nvdoc-italy/assets/57800717/f2b8ff73-5691-4791-9ff7-da0ec0233811)
 
 
- 
+## Psutil
+
+- Profile Metrics:
+  - Memory
+    - Total memory usage 
+  - CPU
+    - Usage
+    - Clock 
+  - Network I/O
+  - I/O operations
+  - Hardisk usage
+- Pros:
+  - Able to monitor the network and disk usage
+- Cons:
+  - Raw data and metrics
+  - Unable to profile resources that used by target process as psutil will profile overall all usage  
+  - Only simple memory usage recorded, detailed variables' name and space allocation is not provided
+  - No GPU relatted metrics
+
+Psutil is a Python cross-platform library used to access system details and process utilities. It is mainly used to check system performance and can be used to monitor various system resources.
+
+Psutil is different from other python packages because psutil able to monitor network and I/O count of the system. Most mainstream profiler or monitoring tools is not supported with the network and I/O usage monitoring
+
+But Psutil is different from other packages or tools that is well organized and easy to use or map the profiling result with the lines of code.
+
+In order to avoid changing the original codes. We can start a monitoring thread at the background while running the python program to profile the network and I/O usages.
+
+Below show a sample monitoring program
+
+```
+import os
+import time
+import threading
+import psutil
+
+# Get current process
+process = psutil.Process(os.getpid())
+
+# Create an Event object
+stop_event = threading.Event()
+
+def monitor_system():
+    while not stop_event.is_set():
+        # Network usage
+        net_io = psutil.net_io_counters()
+        # Hard disk usage
+        disk_usage = psutil.disk_usage('/').percent
+        # I/O operations
+        io_counters = psutil.disk_io_counters()
+        print(f'Network I/O: {net_io}')
+        print(f'Disk Usage: {disk_usage}%')
+        print(f'I/O Counters: {io_counters}')
+        time.sleep(0.1)
+
+# Create a separate thread to monitor system usage
+monitor_thread = threading.Thread(target=monitor_system)
+# Set the thread as a daemon so it will end when the main program ends
+monitor_thread.daemon = True
+monitor_thread.start()
+
+# Your Python executable here
+
+# When you want to stop the monitoring thread
+stop_event.set()
+```
+the script above will start a process at the background to keep track of the hardware status and stop the processa at the end of the program. 
 
 ## PyTorch Multiprocessing Best Practices
 * https://pytorch.org/docs/stable/notes/multiprocessing.html
